@@ -3,6 +3,9 @@
   "version": "0.0.1-alpha1",
   "description": "Elasticsearch bulking proxy",
   "main": "index.js",
+  "bin": {
+    "esbulker": "bin/esbulker.js"
+  },
   "scripts": {
     "test": "mocha"
   },
