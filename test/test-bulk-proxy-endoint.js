@@ -1,5 +1,5 @@
-const {EventEmitter} = require("events");
 const expect = require("expect.js");
+const {EventEmitter} = require("events");
 const {BulkProxyEndpoint} = require("..");
 
 // TODO: test insert by throwing up HTTP server
@@ -12,9 +12,9 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
     beforeEach(() => {
         endpoint = new BulkProxyEndpoint(proxy, uri);
         endpoint.on("error", err => lasterr = err);
-    })
+    });
 
-    it("should create endpoint inheriting EventEmitter", () => {
+    it("should construct object inheriting EventEmitter", () => {
         expect(endpoint).to.be.a(BulkProxyEndpoint);
         expect(endpoint).to.be.an(EventEmitter);
     });
@@ -27,7 +27,7 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.pending).to.be(0);
     })
 
-    it("should inherit config from BulkProxy", () => {
+    it("should be configurable, inheriting from BulkProxy", () => {
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
 
