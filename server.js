@@ -31,7 +31,7 @@ try {
     }
 
     if (options.retries) {
-        proxy.changeRetries(options.retries);
+        proxy.changeRetries(Number(options.retries));
     }
 
     proxy.on("paused", endpoint => {
