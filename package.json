@@ -1,0 +1,23 @@
+{
+  "name": "@zingle/esbulker",
+  "version": "0.0.1-alpha1",
+  "description": "Elasticsearch bulking proxy",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Zingle/esbulker.git"
+  },
+  "author": "Richard Remer <reanjr@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Zingle/esbulker/issues"
+  },
+  "homepage": "https://github.com/Zingle/esbulker#readme",
+  "dependencies": {
+    "iteropt": "^1.0.0-beta1",
+    "tlsopt": "^1.0.1"
+  }
+}
