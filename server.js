@@ -4,6 +4,7 @@ const tlsopt = require("tlsopt");
 const {CLIError} = require("iteropt");
 const readopts = require("./lib/readopts");
 const {BulkProxy} = require("./lib/bulk-proxy");
+const recover = require("./lib/recover");
 
 try {
     const port = process.env.LISTEN_PORT || 1374;
@@ -32,18 +33,24 @@ try {
 
     proxy.on("paused", endpoint => {
         console.info(`writing to ${endpoint.url} has been paused`);
+        recover(endpoint);
     });
 
     proxy.on("resumed", endpoint => {
         console.info(`writing to ${endpoint.url} has been resumed`);
     });
 
-    proxy.on("inserted", (inserts, endpoint) => {
-        console.info(`inserted ${inserts.length} document(s) [${endpoint.url}]`);
-    });
+    proxy.on("result", (success, inserts, endpoint) => {
+        const docs = `${inserts.length} document(s)`;
 
-    proxy.on("lost", (lost, endpoint) => {
-        console.error(`lost ${lost.length} documents(s) [${endpoint.url}]`);
+        if (success) {
+            console.info(`inserted ${docs} [${endpoint.url}]`);
+        } else {
+            console.error(`failed to insert ${docs} [${endpoint.url}]`);
+            if (process.env.DEBUG || process.env.DUMP_LOST) {
+                console.error(inserts.join("").trim());
+            }
+        }
     });
 
     proxy.on("error", (err, endpoint) => {
