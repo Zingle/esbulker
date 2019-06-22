@@ -22,14 +22,20 @@ describe("BulkProxy(string)", () => {
         expect(proxy.url).to.be(url);
         expect(proxy.flushDocuments).to.be(Infinity);
         expect(proxy.flushSize).to.be(Infinity);
+        expect(proxy.retries).to.be(0);
+        expect(proxy.slowThreshold).to.be(Infinity);
     });
 
     it("should be configurable", () => {
         proxy.changeFlushDocuments(1);
         proxy.changeFlushSize(1);
+        proxy.changeRetries(1);
+        proxy.changeSlowThreshold(1);
 
         expect(proxy.flushDocuments).to.be(1);
         expect(proxy.flushSize).to.be(1);
+        expect(proxy.retries).to.be(1);
+        expect(proxy.slowThreshold).to.be(1);
     });
 
     it("should create/maintain endpoints", () => {
@@ -40,6 +46,22 @@ describe("BulkProxy(string)", () => {
         expect(endpoint.uri).to.be(`${index}/${doctype}/_bulk`);
         expect(proxy.endpoint(index, doctype)).to.be(endpoint);
         expect(proxy.endpoint("other", "vals")).to.not.be(endpoint);
+        expect(Array.from(proxy.endpoints()).length).to.be(2);
+    });
+
+    it("should emit paused/resumed events when changing state", () => {
+        let paused = 0;
+        let resumed = 0;
+
+        proxy.on("paused", () => paused++);
+        proxy.on("resumed", () => resumed++);
+
+        proxy.pause();   expect(paused).to.be(1);
+        proxy.pause();   expect(paused).to.be(1);
+        proxy.resume();  expect(resumed).to.be(1);
+        proxy.resume();  expect(resumed).to.be(1);
+        proxy.pause();   expect(paused).to.be(2);
+        proxy.resume();  expect(resumed).to.be(2);
     });
 
     it("should pass specific events from endpoint", () => {
@@ -48,21 +70,21 @@ describe("BulkProxy(string)", () => {
 
         proxy.on("paused", passed("paused"));
         proxy.on("resumed", passed("resumed"));
-        proxy.on("inserted", passed("inserted"));
-        proxy.on("lost", passed("lost"));
+        proxy.on("result", passed("result"));
+        proxy.on("backoff", passed("backoff"));
         proxy.on("error", passed("error"));
 
         endpoint.emit("paused");
         endpoint.emit("resumed");
-        endpoint.emit("inserted", []);
-        endpoint.emit("lost", []);
+        endpoint.emit("result", true, []);
+        endpoint.emit("backoff");
         endpoint.emit("error", new Error("shit happens"));
         endpoint.emit("foo");
 
         expect(called.has("paused")).to.be(true);
         expect(called.has("resumed")).to.be(true);
-        expect(called.has("inserted")).to.be(true);
-        expect(called.has("lost")).to.be(true);
+        expect(called.has("result")).to.be(true);
+        expect(called.has("backoff")).to.be(true);
         expect(called.has("error")).to.be(true);
         expect(called.has("foo")).to.be(false);
 
