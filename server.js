@@ -4,6 +4,7 @@ const tlsopt = require("tlsopt");
 const {CLIError} = require("iteropt");
 const readopts = require("./lib/readopts");
 const {BulkProxy} = require("./lib/bulk-proxy");
+const recover = require("./lib/recover");
 
 try {
     const port = process.env.LISTEN_PORT || 1374;
@@ -22,20 +23,37 @@ try {
         ? https.createServer(tls, proxy.handler())
         : http.createServer(proxy.handler())
 
+    if (options.breakerDocuments) {
+        proxy.changeBreakerDocuments(options.breakerDocuments);
+    }
+
+    if (options.breakerSize) {
+        proxy.changeBreakerSize(options.breakerSize);
+    }
+
     if (options.flushDocuments) {
-        proxy.changeFlushDocuments(Number(options.flushDocuments));
+        proxy.changeFlushDocuments(options.flushDocuments);
     }
 
     if (options.flushSize) {
-        proxy.changeFlushSize(Number(options.flushSize));
+        proxy.changeFlushSize(options.flushSize);
     }
 
     proxy.on("paused", endpoint => {
-        console.info(`writing to ${endpoint.url} has been paused`);
+        if (endpoint) {
+            console.info(`writing to ${endpoint.url} has been paused`);
+        } else {
+            console.warn(`proxy has gone down`);
+            recover(proxy);
+        }
     });
 
     proxy.on("resumed", endpoint => {
-        console.info(`writing to ${endpoint.url} has been resumed`);
+        if (endpoint) {
+            console.info(`writing to ${endpoint.url} has been resumed`);
+        } else {
+            console.info(`proxy has come back up`);
+        }
     });
 
     proxy.on("inserted", (inserts, endpoint) => {
@@ -47,7 +65,9 @@ try {
     });
 
     proxy.on("error", (err, endpoint) => {
-        console.error(`${err.message} [${endpoint.url}]`);
+        if (endpoint) console.error(`${err.message} [${endpoint.url}]`);
+        else console.error(`${err.message}`);
+
         if (process.env.DEBUG) console.error(err.stack);
     });
 
