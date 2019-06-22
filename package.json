@@ -20,7 +20,12 @@
   },
   "homepage": "https://github.com/Zingle/esbulker#readme",
   "dependencies": {
+    "bytesized": "^1.0.0",
     "iteropt": "^1.0.0-beta1",
     "tlsopt": "^1.0.1"
+  },
+  "devDependencies": {
+    "expect.js": "^0.3.1",
+    "mocha": "^6.1.4"
   }
 }
