@@ -5,7 +5,11 @@ const {BulkProxyEndpoint} = require("..");
 // TODO: test insert by throwing up HTTP server
 
 describe("BulkProxyEndpoint(BulkProxy, string)", () => {
-    const proxy = {flushDocuments: 13, flushSize: 23, url: "http://localhost:9200"};
+    const flushDocuments = 13;
+    const flushSize = 23;
+    const retries = 3;
+    const url = "http://localhost:9200";
+    const proxy = {flushDocuments, flushSize, retries, url};
     const uri = "foodex/bardoc/_bulk";
     let endpoint, lasterr;
 
@@ -30,18 +34,23 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
     it("should be configurable, inheriting from BulkProxy", () => {
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
+        expect(endpoint.retries).to.be(proxy.retries);
 
         endpoint.changeFlushDocuments(proxy.flushDocuments+1);
         endpoint.changeFlushSize(proxy.flushSize+1);
+        endpoint.changeRetries(proxy.retries+1);
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments+1);
         expect(endpoint.flushSize).to.be(proxy.flushSize+1);
+        expect(endpoint.retries).to.be(proxy.retries+1);
 
         endpoint.resetFlushDocuments();
         endpoint.resetFlushSize();
+        endpoint.resetRetries();
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
+        expect(endpoint.retries).to.be(proxy.retries);
     });
 
     it("should construct url from proxy url and endpoint uri", () => {
