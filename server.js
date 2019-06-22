@@ -71,16 +71,15 @@ try {
         console.info(`backoff ${ms/1000}s ${loading}/${total} document(s) [${endpoint.url}]`);
     });
 
-    proxy.on("result", (success, inserts, endpoint) => {
-        const docs = `${inserts.length} document(s)`;
+    proxy.on("inserted", (inserts, endpoint) => {
+        console.info(`inserted ${inserts.length} document(s) [${endpoint.url}]`);
+    });
 
-        if (success) {
-            console.info(`inserted ${docs} [${endpoint.url}]`);
-        } else {
-            console.error(`failed to insert ${docs} [${endpoint.url}]`);
-            if (process.env.DEBUG || process.env.DUMP_LOST) {
-                console.error(inserts.join("").trim());
-            }
+    proxy.on("failed", (inserts, endpoint) => {
+        console.error(`failed to insert ${inserts.length} document(s) [${endpoint.url}]`);
+
+        if (process.env.DUMP_LOST) {
+            console.error(inserts.join("").trim());
         }
     });
 
