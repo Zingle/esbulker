@@ -31,6 +31,10 @@ try {
         proxy.changeFlushSize(Number(options.flushSize));
     }
 
+    if (options.retries) {
+        proxy.changeRetries(Number(options.retries));
+    }
+
     proxy.on("paused", endpoint => {
         console.info(`writing to ${endpoint.url} has been paused`);
         recover(endpoint);
@@ -38,6 +42,12 @@ try {
 
     proxy.on("resumed", endpoint => {
         console.info(`writing to ${endpoint.url} has been resumed`);
+    });
+
+    proxy.on("backoff", (ms, inserts, endpoint) => {
+        const loading = inserts.length;
+        const total = loading + endpoint.pending;
+        console.info(`backoff ${ms/1000}s ${loading}/${total} document(s) [${endpoint.url}]`);
     });
 
     proxy.on("result", (success, inserts, endpoint) => {
