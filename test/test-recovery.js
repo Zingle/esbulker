@@ -33,7 +33,7 @@ describe("recover(BulkProxyEndpoint)", () => {
         endpoint = new EventEmitter();
         endpoint.paused = true;
         endpoint.resume = () => resumed = true;
-        endpoint.next = () => endpoint.emit("result", true);
+        endpoint.next = () => endpoint.emit("inserted", []);
     });
 
     it("should recover endpoint after being paused", async () => {
