@@ -23,6 +23,14 @@ try {
         ? https.createServer(tls, proxy.handler())
         : http.createServer(proxy.handler())
 
+    if (options.breakerDocuments) {
+        proxy.changeBreakerDocuments(options.breakerDocuments);
+    }
+
+    if (options.breakerSize) {
+        proxy.changeBreakerSize(options.breakerSize);
+    }
+
     if (options.flushDocuments) {
         proxy.changeFlushDocuments(options.flushDocuments);
     }
@@ -40,12 +48,20 @@ try {
     }
 
     proxy.on("paused", endpoint => {
-        console.info(`writing to ${endpoint.url} has been paused`);
-        recover(endpoint);
-    });
+        if (endpoint) {
+            console.info(`writing to ${endpoint.url} has been paused`);
+        } else {
+            console.warn(`proxy has gone down`);
+            recover(proxy);
+        }
+    }
 
     proxy.on("resumed", endpoint => {
-        console.info(`writing to ${endpoint.url} has been resumed`);
+        if (endpoint) {
+            console.info(`writing to ${endpoint.url} has been resumed`);
+        } else {
+            console.info(`proxy has come back up`);
+        }
     });
 
     proxy.on("backoff", (ms, inserts, endpoint) => {
@@ -68,7 +84,9 @@ try {
     });
 
     proxy.on("error", (err, endpoint) => {
-        console.error(`${err.message} [${endpoint.url}]`);
+        if (endpoint) console.error(`${err.message} [${endpoint.url}]`);
+        else console.error(`${err.message}`);
+
         if (process.env.DEBUG) console.error(err.stack);
     });
 
