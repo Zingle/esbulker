@@ -52,9 +52,10 @@ try {
             console.info(`writing to ${endpoint.url} has been paused`);
         } else {
             console.warn(`proxy has gone down`);
-            recover(proxy);
         }
-    }
+
+        recover(endpoint || proxy);
+    });
 
     proxy.on("resumed", endpoint => {
         if (endpoint) {

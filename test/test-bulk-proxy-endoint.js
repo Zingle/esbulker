@@ -5,7 +5,12 @@ const {BulkProxyEndpoint} = require("..");
 // TODO: test insert by throwing up HTTP server
 
 describe("BulkProxyEndpoint(BulkProxy, string)", () => {
-    const proxy = {flushDocuments: 13, flushSize: 23, url: "http://localhost:9200"};
+    const flushDocuments = 13;
+    const flushSize = 23;
+    const retries = 3;
+    const slowThreshold = 200;
+    const url = "http://localhost:9200";
+    const proxy = {flushDocuments, flushSize, retries, slowThreshold, url};
     const uri = "foodex/bardoc/_bulk";
     let endpoint, lasterr;
 
@@ -25,23 +30,34 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.loading).to.be(false);
         expect(endpoint.paused).to.be(false);
         expect(endpoint.pending).to.be(0);
+        expect(endpoint.size).to.be(0);
     })
 
     it("should be configurable, inheriting from BulkProxy", () => {
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
+        expect(endpoint.retries).to.be(proxy.retries);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold);
 
         endpoint.changeFlushDocuments(proxy.flushDocuments+1);
         endpoint.changeFlushSize(proxy.flushSize+1);
+        endpoint.changeRetries(proxy.retries+1);
+        endpoint.changeSlowThreshold(proxy.slowThreshold+1);
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments+1);
         expect(endpoint.flushSize).to.be(proxy.flushSize+1);
+        expect(endpoint.retries).to.be(proxy.retries+1);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold+1);
 
         endpoint.resetFlushDocuments();
         endpoint.resetFlushSize();
+        endpoint.resetRetries();
+        endpoint.resetSlowThreshold();
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
+        expect(endpoint.retries).to.be(proxy.retries);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold);
     });
 
     it("should construct url from proxy url and endpoint uri", () => {
@@ -63,9 +79,23 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         endpoint.resume();  expect(resumed).to.be(2);
     });
 
-    it("queue document should increment pending", () => {
+    it("should be able to bypass pause for single load", () => {
+        endpoint.pause();
+
+        expect(endpoint.paused).to.be(true);
+        expect(endpoint.loading).to.be(false);
+
+        endpoint.next();
+
+        expect(endpoint.paused).to.be(true);
+        expect(endpoint.loading).to.be(true);
+    });
+
+    it("should update pending and size when document is queued", () => {
         expect(endpoint.pending).to.be(0);
+        expect(endpoint.size).to.be(0);
         endpoint.put("foo", {id: "foo"});
         expect(endpoint.pending).to.be(1);
+        expect(endpoint.size).to.be.greaterThan(0);
     });
 });
