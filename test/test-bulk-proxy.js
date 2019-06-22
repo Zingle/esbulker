@@ -51,21 +51,21 @@ describe("BulkProxy(string)", () => {
 
         proxy.on("paused", passed("paused"));
         proxy.on("resumed", passed("resumed"));
-        proxy.on("inserted", passed("inserted"));
-        proxy.on("lost", passed("lost"));
+        proxy.on("result", passed("result"));
+        proxy.on("backoff", passed("backoff"));
         proxy.on("error", passed("error"));
 
         endpoint.emit("paused");
         endpoint.emit("resumed");
-        endpoint.emit("inserted", []);
-        endpoint.emit("lost", []);
+        endpoint.emit("result", true, []);
+        endpoint.emit("backoff");
         endpoint.emit("error", new Error("shit happens"));
         endpoint.emit("foo");
 
         expect(called.has("paused")).to.be(true);
         expect(called.has("resumed")).to.be(true);
-        expect(called.has("inserted")).to.be(true);
-        expect(called.has("lost")).to.be(true);
+        expect(called.has("result")).to.be(true);
+        expect(called.has("backoff")).to.be(true);
         expect(called.has("error")).to.be(true);
         expect(called.has("foo")).to.be(false);
 

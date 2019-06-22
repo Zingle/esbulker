@@ -72,6 +72,18 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         endpoint.resume();  expect(resumed).to.be(2);
     });
 
+    it("should be able to bypass pause for single load", () => {
+        endpoint.pause();
+
+        expect(endpoint.paused).to.be(true);
+        expect(endpoint.loading).to.be(false);
+
+        endpoint.next();
+
+        expect(endpoint.paused).to.be(true);
+        expect(endpoint.loading).to.be(true);
+    });
+
     it("queue document should increment pending", () => {
         expect(endpoint.pending).to.be(0);
         endpoint.put("foo", {id: "foo"});
