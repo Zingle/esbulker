@@ -8,8 +8,9 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
     const flushDocuments = 13;
     const flushSize = 23;
     const retries = 3;
+    const slowThreshold = 200;
     const url = "http://localhost:9200";
-    const proxy = {flushDocuments, flushSize, retries, url};
+    const proxy = {flushDocuments, flushSize, retries, slowThreshold, url};
     const uri = "foodex/bardoc/_bulk";
     let endpoint, lasterr;
 
@@ -35,22 +36,27 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
         expect(endpoint.retries).to.be(proxy.retries);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold);
 
         endpoint.changeFlushDocuments(proxy.flushDocuments+1);
         endpoint.changeFlushSize(proxy.flushSize+1);
         endpoint.changeRetries(proxy.retries+1);
+        endpoint.changeSlowThreshold(proxy.slowThreshold+1);
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments+1);
         expect(endpoint.flushSize).to.be(proxy.flushSize+1);
         expect(endpoint.retries).to.be(proxy.retries+1);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold+1);
 
         endpoint.resetFlushDocuments();
         endpoint.resetFlushSize();
         endpoint.resetRetries();
+        endpoint.resetSlowThreshold();
 
         expect(endpoint.flushDocuments).to.be(proxy.flushDocuments);
         expect(endpoint.flushSize).to.be(proxy.flushSize);
         expect(endpoint.retries).to.be(proxy.retries);
+        expect(endpoint.slowThreshold).to.be(proxy.slowThreshold);
     });
 
     it("should construct url from proxy url and endpoint uri", () => {

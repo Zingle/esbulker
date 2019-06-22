@@ -35,6 +35,10 @@ try {
         proxy.changeRetries(Number(options.retries));
     }
 
+    if (options.slow) {
+        proxy.changeSlowThreshold(options.slow);
+    }
+
     proxy.on("paused", endpoint => {
         console.info(`writing to ${endpoint.url} has been paused`);
         recover(endpoint);
@@ -106,7 +110,8 @@ OPTIONS
 
   --help                    Show this help.
   --flush-documents=<num>   Max documents loaded per request.
-  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)`
+  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)
+  --slow=<num>              Slow insert threshold in seconds.`
     );
 
     process.exit(0);

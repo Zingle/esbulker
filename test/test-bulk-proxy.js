@@ -23,16 +23,19 @@ describe("BulkProxy(string)", () => {
         expect(proxy.flushDocuments).to.be(Infinity);
         expect(proxy.flushSize).to.be(Infinity);
         expect(proxy.retries).to.be(0);
+        expect(proxy.slowThreshold).to.be(Infinity);
     });
 
     it("should be configurable", () => {
         proxy.changeFlushDocuments(1);
         proxy.changeFlushSize(1);
         proxy.changeRetries(1);
+        proxy.changeSlowThreshold(1);
 
         expect(proxy.flushDocuments).to.be(1);
         expect(proxy.flushSize).to.be(1);
         expect(proxy.retries).to.be(1);
+        expect(proxy.slowThreshold).to.be(1);
     });
 
     it("should create/maintain endpoints", () => {
