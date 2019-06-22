@@ -23,11 +23,11 @@ try {
         : http.createServer(proxy.handler())
 
     if (options.flushDocuments) {
-        proxy.changeFlushDocuments(Number(options.flushDocuments));
+        proxy.changeFlushDocuments(options.flushDocuments);
     }
 
     if (options.flushSize) {
-        proxy.changeFlushSize(Number(options.flushSize));
+        proxy.changeFlushSize(options.flushSize);
     }
 
     proxy.on("paused", endpoint => {
@@ -89,8 +89,7 @@ OPTIONS
 
   --help                    Show this help.
   --flush-documents=<num>   Max documents loaded per request.
-  --flush-size=<num>        Max size of data per request.
-`
+  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)`
     );
 
     process.exit(0);
