@@ -46,6 +46,22 @@ describe("BulkProxy(string)", () => {
         expect(endpoint.uri).to.be(`${index}/${doctype}/_bulk`);
         expect(proxy.endpoint(index, doctype)).to.be(endpoint);
         expect(proxy.endpoint("other", "vals")).to.not.be(endpoint);
+        expect(Array.from(proxy.endpoints()).length).to.be(2);
+    });
+
+    it("should emit paused/resumed events when changing state", () => {
+        let paused = 0;
+        let resumed = 0;
+
+        proxy.on("paused", () => paused++);
+        proxy.on("resumed", () => resumed++);
+
+        proxy.pause();   expect(paused).to.be(1);
+        proxy.pause();   expect(paused).to.be(1);
+        proxy.resume();  expect(resumed).to.be(1);
+        proxy.resume();  expect(resumed).to.be(1);
+        proxy.pause();   expect(paused).to.be(2);
+        proxy.resume();  expect(resumed).to.be(2);
     });
 
     it("should pass specific events from endpoint", () => {

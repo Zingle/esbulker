@@ -2,6 +2,28 @@ const {EventEmitter} = require("events");
 const expect = require("expect.js");
 const recover = require("../lib/recover");
 
+describe("recover(BulkProxy)", () => {
+    let proxy, resumed;
+
+    beforeEach(() => {
+        resumed = false;
+
+        proxy = new EventEmitter();
+        proxy.paused = true;
+        proxy.breakerDocuments = Infinity;
+        proxy.breakerSize = Infinity;
+        proxy.endpoint = () => {};
+        proxy.endpoints = function*() {};
+        proxy.resume = () => resumed = true;
+    });
+
+    it("should recover proxy after being paused", async () => {
+        proxy.downtime = 1;
+        await recover(proxy);
+        expect(resumed).to.be(true);
+    });
+});
+
 describe("recover(BulkProxyEndpoint)", () => {
     let endpoint, resumed;
 
@@ -15,7 +37,8 @@ describe("recover(BulkProxyEndpoint)", () => {
     });
 
     it("should recover endpoint after being paused", async () => {
-        await recover(endpoint, 0);
+        endpoint.wait = 1;  // HACK: affects recovery time for testing
+        await recover(endpoint);
         expect(resumed).to.be(true);
     });
 });

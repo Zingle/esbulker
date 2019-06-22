@@ -30,6 +30,7 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.loading).to.be(false);
         expect(endpoint.paused).to.be(false);
         expect(endpoint.pending).to.be(0);
+        expect(endpoint.size).to.be(0);
     })
 
     it("should be configurable, inheriting from BulkProxy", () => {
@@ -90,9 +91,11 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.loading).to.be(true);
     });
 
-    it("queue document should increment pending", () => {
+    it("should update pending and size when document is queued", () => {
         expect(endpoint.pending).to.be(0);
+        expect(endpoint.size).to.be(0);
         endpoint.put("foo", {id: "foo"});
         expect(endpoint.pending).to.be(1);
+        expect(endpoint.size).to.be.greaterThan(0);
     });
 });
