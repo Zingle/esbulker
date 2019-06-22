@@ -30,6 +30,10 @@ try {
         proxy.changeFlushSize(Number(options.flushSize));
     }
 
+    if (options.slow) {
+        proxy.changeSlowThreshold(options.slow);
+    }
+
     proxy.on("paused", endpoint => {
         console.info(`writing to ${endpoint.url} has been paused`);
     });
@@ -90,7 +94,7 @@ OPTIONS
   --help                    Show this help.
   --flush-documents=<num>   Max documents loaded per request.
   --flush-size=<num>        Max size of data per request.
-`
+  --slow=<num>              Slow insert threshold in seconds.`
     );
 
     process.exit(0);
