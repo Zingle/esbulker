@@ -39,6 +39,14 @@ try {
         proxy.changeFlushSize(options.flushSize);
     }
 
+    if (options.retries) {
+        proxy.changeRetries(Number(options.retries));
+    }
+
+    if (options.slow) {
+        proxy.changeSlowThreshold(options.slow);
+    }
+
     proxy.on("paused", endpoint => {
         if (endpoint) {
             console.info(`writing to ${endpoint.url} has been paused`);
@@ -46,7 +54,7 @@ try {
             console.warn(`proxy has gone down`);
             recover(proxy);
         }
-    });
+    }
 
     proxy.on("resumed", endpoint => {
         if (endpoint) {
@@ -56,12 +64,23 @@ try {
         }
     });
 
-    proxy.on("inserted", (inserts, endpoint) => {
-        console.info(`inserted ${inserts.length} document(s) [${endpoint.url}]`);
+    proxy.on("backoff", (ms, inserts, endpoint) => {
+        const loading = inserts.length;
+        const total = loading + endpoint.pending;
+        console.info(`backoff ${ms/1000}s ${loading}/${total} document(s) [${endpoint.url}]`);
     });
 
-    proxy.on("lost", (lost, endpoint) => {
-        console.error(`lost ${lost.length} documents(s) [${endpoint.url}]`);
+    proxy.on("result", (success, inserts, endpoint) => {
+        const docs = `${inserts.length} document(s)`;
+
+        if (success) {
+            console.info(`inserted ${docs} [${endpoint.url}]`);
+        } else {
+            console.error(`failed to insert ${docs} [${endpoint.url}]`);
+            if (process.env.DEBUG || process.env.DUMP_LOST) {
+                console.error(inserts.join("").trim());
+            }
+        }
     });
 
     proxy.on("error", (err, endpoint) => {
@@ -109,8 +128,8 @@ OPTIONS
 
   --help                    Show this help.
   --flush-documents=<num>   Max documents loaded per request.
-  --flush-size=<num>        Max size of data per request.
-`
+  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)
+  --slow=<num>              Slow insert threshold in seconds.`
     );
 
     process.exit(0);
