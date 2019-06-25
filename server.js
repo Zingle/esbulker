@@ -3,8 +3,13 @@ const https = require("https");
 const tlsopt = require("tlsopt");
 const {CLIError} = require("iteropt");
 const readopts = require("./lib/readopts");
+const stringWriter = require("./lib/string-writer");
 const {BulkProxy} = require("./lib/bulk-proxy");
 const recover = require("./lib/recover");
+const {file: logfile, none: nolog} = require("./lib/console");
+const {HTTPUnhandledStatusError} = require("./lib/http");
+
+const {entries} = Object;
 
 try {
     const port = process.env.LISTEN_PORT || 1374;
@@ -16,6 +21,7 @@ try {
         process.exit(0);
     }
 
+    const httpConsole = options.httpLog ? logfile(options.httpLog) : nolog();
     const proxy = new BulkProxy(options.url);
     const tls = tlsopt.readSync();
     const secure = Boolean(tls.pfx || tls.cert);
@@ -88,6 +94,34 @@ try {
         else console.error(`${err.message}`);
 
         if (process.env.DEBUG) console.error(err.stack);
+
+        if (err instanceof HTTPUnhandledStatusError) {
+            const resbody = stringWriter();
+            const {req, res} = err;
+
+            res.pipe(resbody).on("error", console.error).on("finish", () => {
+                const protocol = req.connection.encrypted ? "https" : "http";
+                const {host} = req.getHeaders();
+                const header = `** UNEXPECTED HTTP STATUS **`;
+
+                httpConsole.error(Array(header.length).fill("*").join(""));
+                httpConsole.error(header);
+                httpConsole.error(Array(header.length).fill("*").join(""));
+
+                httpConsole.error(`${req.method} ${req.path} HTTP/1.1`);
+                httpConsole.error(`Host: ${host}`);
+                httpConsole.error(`Date: ${new Date()}`);
+                httpConsole.error(`X-Forwarded-Proto: ${protocol}`);
+                httpConsole.error();
+                httpConsole.error(req.body.trimRight());
+                httpConsole.error(Array(header.length).fill("-").join(""));
+                httpConsole.error(`${res.statusCode} ${res.statusMessage}`);
+                httpConsole.error();
+                httpConsole.error(String(resbody).trimRight());
+
+                httpConsole.error(Array(header.length).fill("*").join(""));
+            });
+        }
     });
 
     if (!secure) {
