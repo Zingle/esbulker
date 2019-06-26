@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Zingle/esbulker#readme",
   "dependencies": {
+    "@zingle/string-writer": "0.0.2",
     "bytesized": "^1.0.0",
     "iteropt": "^1.0.0-beta1",
     "tlsopt": "^1.0.1"
