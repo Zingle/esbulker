@@ -2,8 +2,8 @@ const http = require("http");
 const https = require("https");
 const tlsopt = require("tlsopt");
 const {CLIError} = require("iteropt");
+const stringWriter = require("@zingle/string-writer");
 const readopts = require("./lib/readopts");
-const stringWriter = require("./lib/string-writer");
 const {BulkProxy} = require("./lib/bulk-proxy");
 const recover = require("./lib/recover");
 const {file: logfile, none: nolog} = require("./lib/console");
@@ -96,7 +96,7 @@ try {
         if (process.env.DEBUG) console.error(err.stack);
 
         if (err instanceof HTTPUnhandledStatusError) {
-            const resbody = stringWriter();
+            const resbody = stringWriter("utf8");
             const {req, res} = err;
 
             res.pipe(resbody).on("error", console.error).on("finish", () => {
