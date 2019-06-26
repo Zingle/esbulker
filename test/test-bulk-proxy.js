@@ -104,9 +104,10 @@ describe("BulkProxy(string)", () => {
         const doc = {id};
 
         proxy.endpoint(index, doctype).put = (...args) => {
-            expect(args.length).to.be(2);
+            expect(args.length).to.be(3);
             expect(args[0]).to.be(id);
             expect(args[1]).to.be(doc);
+            expect(args[2]).to.be(undefined);
             done();
         };
 
