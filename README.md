@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/Zingle/esbulker.svg?branch=master)](https://travis-ci.com/Zingle/esbulker)
 [![Coverage Status](https://coveralls.io/repos/github/Zingle/esbulker/badge.svg?branch=travis-build)](https://coveralls.io/github/Zingle/esbulker?branch=travis-build)
 
 esbulker Bulking Proxy for Elasticsearch
