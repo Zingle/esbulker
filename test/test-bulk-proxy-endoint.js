@@ -98,4 +98,9 @@ describe("BulkProxyEndpoint(BulkProxy, string)", () => {
         expect(endpoint.pending).to.be(1);
         expect(endpoint.size).to.be.greaterThan(0);
     });
+
+    it("should indicate if document was created or overwritten", () => {
+        expect(endpoint.put("foo", {})).to.be(true);
+        expect(endpoint.put("foo", {})).to.be(false);
+    });
 });

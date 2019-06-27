@@ -113,4 +113,13 @@ describe("BulkProxy(string)", () => {
 
         proxy.put(index, doctype, id, doc);
     });
+
+    it("should indicate if document is created or overwritten", () => {
+        const endpoint = proxy.endpoint(index, doctype);
+        const result = Symbol();
+
+        endpoint.put = () => result;
+
+        expect(proxy.put(index, doctype, "foo", {})).to.be(result);
+    });
 });
