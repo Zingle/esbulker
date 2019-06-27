@@ -19,6 +19,10 @@ try {
     if (options.help) {
         help();
         process.exit(0);
+    } else if (options.version) {
+        const package = require("./package");
+        console.log(`esbulk v${package.version}`);
+        process.exit(0);
     }
 
     const httpConsole = options.httpLog ? logfile(options.httpLog) : nolog();
