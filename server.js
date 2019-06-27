@@ -14,10 +14,6 @@ const {env, argv} = process;
 
 try {
     const options = assign(defaults(), readenv(env), readargs(argv));
-
-    console.log(options);
-    process.exit(0);
-
     const httpConsole = options.httpLog ? logfile(options.httpLog) : nolog();
     const proxy = new BulkProxy(options.url);
     const tls = tlsopt.readSync();

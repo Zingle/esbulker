@@ -1,6 +1,6 @@
 {
   "name": "@zingle/esbulker",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Elasticsearch bulking proxy",
   "main": "index.js",
   "bin": {
