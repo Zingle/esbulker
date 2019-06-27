@@ -160,14 +160,29 @@ Start elasticsearch bulk load proxy.
 
 ARGUMENTS
 
-  endpoint                  URL of Elasticsearch server.
+  endpoint              URL of Elasticsearch server.
 
 OPTIONS
 
-  --help                    Show this help.
-  --flush-documents=<num>   Max documents loaded per request.
-  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)
-  --slow=<num>              Slow insert threshold in seconds.`
+  --help                Show this help.
+  --break-docs=<docs>   Max documents queued before breaking.
+  --break-size=<bytes>  Max size of queue before breaking.
+  --flush-docs=<docs>   Max documents loaded per insert.
+  --flush-size=<bytes>  Max size of data per insert.
+  --http-log=<file>     Path where failed HTTP requests are written.
+  --retry=<num>         Number of times to immediately retry before failing.
+  --slow=<num>          Slow insert threshold in seconds.
+  --version             Print version number.
+
+  NOTE: options which accept bytes can have units such as "10mb" or "1GiB"
+
+ENVIRONMENT
+
+  LISTEN_PORT           Configure port which proxy listens on. (default 1374)
+
+SIGNALS
+
+  HUP                   Re-open HTTP log file.`
     );
 
     process.exit(0);
