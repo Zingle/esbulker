@@ -3,27 +3,20 @@ const https = require("https");
 const tlsopt = require("tlsopt");
 const {CLIError} = require("iteropt");
 const stringWriter = require("@zingle/string-writer");
-const readopts = require("./lib/readopts");
 const {BulkProxy} = require("./lib/bulk-proxy");
+const {defaults, readenv, readargs} = require("./lib/config");
 const recover = require("./lib/recover");
 const {file: logfile, none: nolog} = require("./lib/console");
 const {HTTPUnhandledStatusError} = require("./lib/http");
 
-const {entries} = Object;
+const {assign, entries} = Object;
+const {env, argv} = process;
 
 try {
-    const port = process.env.LISTEN_PORT || 1374;
-    const address = process.env.LISTEN_ADDR || undefined;
-    const options = readopts(process.argv);
+    const options = assign(defaults(), readenv(env), readargs(argv));
 
-    if (options.help) {
-        help();
-        process.exit(0);
-    } else if (options.version) {
-        const package = require("./package");
-        console.log(`esbulk v${package.version}`);
-        process.exit(0);
-    }
+    console.log(options);
+    process.exit(0);
 
     const httpConsole = options.httpLog ? logfile(options.httpLog) : nolog();
     const proxy = new BulkProxy(options.url);
@@ -132,7 +125,7 @@ try {
         console.warn("transport security not enabled");
     }
 
-    server.listen(...[port, address].filter(a => a), () => {
+    server.listen(...[options.port, options.address].filter(a => a), () => {
         const {address, port} = server.address();
         console.info(`listening on ${address}:${port}`);
     });
@@ -145,30 +138,4 @@ try {
         console.error(process.env.DEBUG ? err.stack : err.message);
         process.exit(100);
     }
-}
-
-/**
- * Display help.
- */
-function help() {
-    console.log(
-`Usage:
-  esbulker [<OPTIONS>] <endpoint>
-  esbulker --help
-
-Start elasticsearch bulk load proxy.
-
-ARGUMENTS
-
-  endpoint                  URL of Elasticsearch server.
-
-OPTIONS
-
-  --help                    Show this help.
-  --flush-documents=<num>   Max documents loaded per request.
-  --flush-size=<num>        Max size of data per request. (e.g. 256kib, 2mb)
-  --slow=<num>              Slow insert threshold in seconds.`
-    );
-
-    process.exit(0);
 }
