@@ -16,6 +16,8 @@ will begin backing off to avoid overloading ES.  If a problem persists, the
 proxy will start returning `503 Service Unavailable` errors and will no
 longer queue any documents.
 
+![Request Flow Diagram](doc/diagram.png)
+
 Installation
 ------------
 ```sh
