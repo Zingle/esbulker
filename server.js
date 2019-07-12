@@ -13,6 +13,9 @@ try {
     const serverOpts = options.secure ? [options.tls] : [];
     const server = web.createServer(...serverOpts, handler(options.url));
 
+    console.http = (...args) => console.debug(...args);
+
+    if (options.verbosity < 3) console.http = () => {};
     if (options.verbosity < 2) console.debug = () => {};
     if (options.verbosity < 1) console.info = () => {};
     if (options.verbosity < 0) console.warn = () => {};
@@ -20,7 +23,7 @@ try {
 
     server.listen(...[options.port, options.address].filter(a => a), () => {
         const {address, port} = server.address();
-        console.debug(`listening on ${address}:${port}`);
+        console.info(`listening on ${address}:${port}`);
     });
 } catch (err) {
     if (err instanceof CLIError) {
