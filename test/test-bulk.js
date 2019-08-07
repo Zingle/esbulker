@@ -1,4 +1,3 @@
-const http = require("http");
 const expect = require("expect.js");
 const nock = require("nock");
 const bulk = require("../lib/bulk");
@@ -8,31 +7,27 @@ const {values} = Object;
 const {registry: queues} = Queue[Queue.internal];
 
 describe("bulk(string, Header, object)", () => {
+    const esurl = "http://es.example.com:9200";
     const index = "idx";
-    const doctype = "whatzit";
     const id = "fizz";
+    const doctype = "whatzit";
+
+    const trueuri = `${index}/_bulk?refresh=true`;
+    const waituri = `${index}/_bulk?refresh=wait_for`;
+    const typeuri = `${index}/${doctype}/_bulk`;
+    const sizeuri = `${index}/size/_bulk`;
+
+    const trueurl = `${esurl}/${trueuri}`;
+    const waiturl = `${esurl}/${waituri}`;
+    const typeurl = `${esurl}/${typeuri}`;
+    const sizeurl = `${esurl}/${sizeuri}`;
+
     const simpleHeader = {index, doctype, id};
     const sizeHeader = {index, doctype: "size", id};
     const trueHeader = {index, doctype, id, refresh: "true"};
     const waitHeader = {index, doctype, id, refresh: "wait_for"};
 
-    let esurl, trueurl, waiturl, typeurl, sizeurl, server;
-
-    beforeEach(done => {
-        server = http.createServer((req, res) => {
-            res.end();
-        });
-
-        server.listen(() => {
-            const {port} = server.address();
-            esurl = `http://localhost:${port}`;
-            trueurl = `${esurl}/${index}/_bulk?refresh=true`;
-            waiturl = `${esurl}/${index}/_bulk?refresh=wait_for`;
-            typeurl = `${esurl}/${index}/${doctype}/_bulk`;
-            sizeurl = `${esurl}/${index}/size/_bulk`;
-            done();
-        });
-
+    beforeEach(() => {
         console.http = () => {};
         console.debug = () => {};
         console.info = () => {};
@@ -41,7 +36,6 @@ describe("bulk(string, Header, object)", () => {
     });
 
     afterEach(() => {
-        server.close();
         delete console.http;
         delete console.debug;
         delete console.info;
@@ -50,26 +44,25 @@ describe("bulk(string, Header, object)", () => {
     });
 
     it("should create document queue without refresh", async () => {
-        let found = false;
+        const es = nock(esurl).post(`/${typeuri}`).reply(202);
         await bulk(esurl, simpleHeader, {id});
         expect(queues.has(typeurl)).to.be(true);
     });
 
     it("should create separate queue for refresh=true", async () => {
-        let found = false;
+        const es = nock(esurl).post(`/${trueuri}`).reply(200);
         await bulk(esurl, trueHeader, {id});
         expect(queues.has(trueurl)).to.be(true);
     });
 
     it("should create separate queue for refresh=wait_for", async () => {
-        let found = false;
+        const es = nock(esurl).post(`/${waituri}`).reply(200);
         await bulk(esurl, waitHeader, {id});
         expect(queues.has(waiturl)).to.be(true);
     });
 
     it("should update the length and size of queue", async () => {
-        let found = false;
-
+        const es = nock(esurl).post(`/${sizeuri}`).reply(202);
         const pending = bulk(esurl, sizeHeader, {id});
 
         expect(queues.has(sizeurl)).to.be(true);
