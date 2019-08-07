@@ -1,7 +1,11 @@
 const http = require("http");
 const expect = require("expect.js");
+const nock = require("nock");
 const bulk = require("../lib/bulk");
-const {all: queues} = require("../lib/queue");
+const Queue = require("../lib/queue");
+
+const {values} = Object;
+const {registry: queues} = Queue[Queue.internal];
 
 describe("bulk(string, Header, object)", () => {
     const index = "idx";
@@ -48,22 +52,19 @@ describe("bulk(string, Header, object)", () => {
     it("should create document queue without refresh", async () => {
         let found = false;
         await bulk(esurl, simpleHeader, {id});
-        for (let queue of queues()) if (queue.url == typeurl) found = true;
-        expect(found).to.be(true);
+        expect(queues.has(typeurl)).to.be(true);
     });
 
     it("should create separate queue for refresh=true", async () => {
         let found = false;
         await bulk(esurl, trueHeader, {id});
-        for (let queue of queues()) if (queue.url === trueurl) found = true;
-        expect(found).to.be(true);
+        expect(queues.has(trueurl)).to.be(true);
     });
 
     it("should create separate queue for refresh=wait_for", async () => {
         let found = false;
         await bulk(esurl, waitHeader, {id});
-        for (let queue of queues()) if (queue.url === waiturl) found = true;
-        expect(found).to.be(true);
+        expect(queues.has(waiturl)).to.be(true);
     });
 
     it("should update the length and size of queue", async () => {
@@ -71,16 +72,14 @@ describe("bulk(string, Header, object)", () => {
 
         const pending = bulk(esurl, sizeHeader, {id});
 
-        for (let queue of queues()) if (queue.url === sizeurl) {
-            found = queue;
-            expect(queue.length).to.be(1);
-            expect(queue.size).to.be.greaterThan(0);
-        }
+        expect(queues.has(sizeurl)).to.be(true);
+        expect(queues.get(sizeurl).length).to.be(1);
+        expect(queues.get(sizeurl).size).to.be.greaterThan(0);
 
         await pending;
 
-        expect(found).to.be.ok();
-        expect(found.length).to.be(0);
-        expect(found.size).to.be(0);
+        expect(queues.has(sizeurl)).to.be(true);
+        expect(queues.get(sizeurl).length).to.be(0);
+        expect(queues.get(sizeurl).size).to.be(0);
     });
 });
