@@ -16,4 +16,4 @@ function polyfillReadable() {
     }
 }
 
-polyfillReadable();
+if (!stream.Readable.from) polyfillReadable();
