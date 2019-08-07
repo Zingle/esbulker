@@ -14,6 +14,7 @@ describe("handler(string)", () => {
     let req, res;
 
     beforeEach(() => {
+        console.http = () => {};
         console.debug = () => {};
         console.info = () => {};
         console.warn = () => {};
@@ -30,15 +31,17 @@ describe("handler(string)", () => {
         delete console.error;
     });
 
-    it("should return async HTTP request handler", () => {
-        requestHandler = (req, res) => {};
-
+    it("should return async HTTP request handler", async () => {
+        nock(esurl).post("/foo/bar/_bulk").reply(202);
         expect(handle).to.be.a("function");
         expect(handle.length).to.be(2);
-        expect(handle(req, res)).to.be.a(Promise);
+        const promise = handle(req, res);
+        expect(promise).to.be.a(Promise);
+        await promise;
     });
 
     it("should accept PUT requests", async () => {
+        nock(esurl).post("/foo/bar/_bulk").reply(202);
         await handle(req, res);
         expect(res.statusCode).to.be(202);
     });
